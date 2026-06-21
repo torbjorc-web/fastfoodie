@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>FastFoodie</title>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+</head>
+<body>
+  <script src="GameScene.js"></script>
+  <script src="StartScene.js"></script>
+  <script src="TutorialScene.js"></script>
+  <script src="WinScene.js"></script>
+  <script src="LoseScene.js"></script>
+  
+  <script>
+    const config = {
+      type: Phaser.AUTO,
+      width: 800,
+      height: 600,
+      scenes: [StartScene, TutorialScene, GameScene, WinScene, LoseScene]
+    };
+    
+    const game = new Phaser.Game(config);
+  </script>
+</body>
+</html>
