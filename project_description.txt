@@ -1,0 +1,31 @@
+# FastFoodie Project Overview
+
+FastFoodie is a Phaser-based browser game built for learning scene management, containers, tweens, camera positioning, and input handling.
+
+## Main Idea
+
+You play as a cafeteria server. Customers arrive in waves and each customer has a hunger capacity that you must match with food items.
+
+## Core Systems
+
+- Start, tutorial, gameplay, win, and lose scenes.
+- Customer line movement using containers.
+- Hunger meters and timer bars.
+- Score and star rating tracking.
+- Three food types with different fullness values.
+
+## Controls
+
+- `A` = Burger
+- `S` = Fries
+- `D` = Shake
+- `Enter` = Serve customer / continue
+
+## Files
+
+- `StartScene.js`
+- `TutorialScene.js`
+- `GameScene.js`
+- `WinScene.js`
+- `LoseScene.js`
+- `index.html`
