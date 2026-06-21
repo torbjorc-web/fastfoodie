@@ -26,7 +26,6 @@ class GameScene extends Phaser.Scene {
     super({ key: 'GameScene' })
   }
 
-
   preload() {
     // Preload images
     const baseURL = 'https://content.codecademy.com/courses/learn-phaser/fastfoodie/';
@@ -43,7 +42,6 @@ class GameScene extends Phaser.Scene {
     this.load.image('Star-full', `${baseURL}art/Star-full.png`);
     this.load.image('Star-half', `${baseURL}art/Star-half.png`);
     this.load.image('Star-empty', `${baseURL}art/Star-empty.png`);
-
 
     // Preload song
     this.load.audio('gameplayTheme', [
@@ -82,7 +80,6 @@ class GameScene extends Phaser.Scene {
       `${baseURL}audio/sfx/nextWave.mp3`
     ]);
   }
-
 
   create() {
     gameState.cam = this.cameras.main;
@@ -128,24 +125,23 @@ class GameScene extends Phaser.Scene {
     gameState.currentMeal = { children: { entries: [] }, fullnessValue: 0 };
     gameState.starGroup = this.add.group();
     
-    // Add keyboard keys
+    // Add keyboard keys (Tasks 24-25)
     gameState.keys.Enter = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
     gameState.keys.A = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
     gameState.keys.S = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
     gameState.keys.D = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
 
-    // Draw initial stars
+    // Draw initial stars (Task 40)
     this.drawStars();
     
     this.generateWave();
   }
 
-
   update() {
-    // Task 8-14: Move customers forward in line
+    // Tasks 8-14: Move customers forward in line
     if (gameState.readyForNextOrder) {
-      gameState.readyForNextOrder = false;
-      gameState.customerIsReady = false;
+      gameState.readyForNextOrder = false; // Task 10
+      gameState.customerIsReady = false; // Task 11
 
       // Task 12: Get current customer
       gameState.currentCustomer = gameState.customers.children.entries[gameState.customersServedCount];
@@ -162,7 +158,7 @@ class GameScene extends Phaser.Scene {
           onComplete: () => {
             // Task 14: Set customer as ready
             gameState.customerIsReady = true;
-            gameState.currentCustomer.meterContainer.visible = true;
+            gameState.currentCustomer.meterContainer.visible = true; // Task 23
             
             // Task 45: Start timer
             this.startCustomerTimer(gameState.currentCustomer);
@@ -171,7 +167,7 @@ class GameScene extends Phaser.Scene {
       }
     }
 
-    // Task 24-34: Handle food placement (A/S/D keys)
+    // Tasks 24-34: Handle food placement (A/S/D keys)
     if (Phaser.Input.Keyboard.KeyDown(gameState.keys.A)) {
       this.placeFood('Burger', 5);
     }
@@ -189,7 +185,6 @@ class GameScene extends Phaser.Scene {
       }
     }
   }
-
 
   /* WAVES */
   // Generate wave
@@ -216,7 +211,7 @@ class GameScene extends Phaser.Scene {
       // Customer sprite randomizer
       let customerImageKey = Math.ceil(Math.random() * 5);
 
-      // Task 6-7: Draw customer sprite
+      // Tasks 6-7: Draw customer sprite
       let customer = this.add.sprite(0, 0, `Customer-${customerImageKey}`).setScale(0.5);
       customerContainer.add(customer);
 
@@ -282,7 +277,7 @@ class GameScene extends Phaser.Scene {
       // Task 28: Add to fullness value
       gameState.currentMeal.fullnessValue += fullnessValue;
 
-      // Task 29-32: Update meter colors
+      // Tasks 29-32: Update meter colors
       this.updateMeterColors();
 
       // Task 33: Play sound
@@ -295,7 +290,7 @@ class GameScene extends Phaser.Scene {
     const currentFullness = gameState.currentMeal.fullnessValue;
     const capacity = gameState.currentCustomer.fullnessCapacity;
 
-    // Task 29-32: Color based on fullness
+    // Tasks 29-32: Color based on fullness
     for (let i = 0; i < currentFullness; i++) {
       if (i < capacity) {
         const block = gameState.currentCustomer.fullnessMeterBlocks[i];
@@ -334,4 +329,183 @@ class GameScene extends Phaser.Scene {
         if (percentage > 0.75) {
           customer.timerMeterBody.setFill(0x3ADB40); // Green
         } else if (percentage > 0.25) {
-          customer
+          customer.timerMeterBody.setFill(0xFF9D00); // Orange
+        } else {
+          customer.timerMeterBody.setFill(0xDB533A); // Red
+        }
+        
+        // Task 45: Auto-serve when timer reaches zero
+        if (currentTime <= 0) {
+          customer.timer.destroy();
+          this.moveCustomerLine();
+        }
+      },
+      repeat: maxTime / 100
+    });
+  }
+
+  // Task 35: Move customer line
+  moveCustomerLine() {
+    // Reset meal and update counters
+    gameState.currentMeal.children.entries = [];
+    gameState.currentMeal.fullnessValue = 0;
+    gameState.customersServedCount++;
+    gameState.readyForNextOrder = true;
+
+    // Task 36: Update text
+    this.updateCustomerCountText();
+
+    const currentFullness = gameState.currentMeal.fullnessValue;
+    const capacity = gameState.currentCustomer.fullnessCapacity;
+
+    // Tasks 41-43: Evaluate rating and update stars
+    this.updateStars(currentFullness, capacity);
+
+    // Tasks 37-38: Tween served customers left
+    if (gameState.customersServedCount > 0) {
+      for (let i = 0; i < gameState.customersServedCount; i++) {
+        const prevCustomer = gameState.customers.children.entries[i];
+        if (prevCustomer) {
+          this.tweens.add({
+            targets: prevCustomer,
+            x: prevCustomer.x - 300,
+            angle: 0,
+            duration: 750
+          });
+        }
+      }
+    }
+
+    // Task 39: Tween remaining customers left
+    for (let i = gameState.customersServedCount; 
+         i < gameState.customers.children.entries.length; i++) {
+      const remainingCustomer = gameState.customers.children.entries[i];
+      if (remainingCustomer) {
+        this.tweens.add({
+          targets: remainingCustomer,
+          x: remainingCustomer.x - 200,
+          delay: 200,
+          duration: 1500
+        });
+      }
+    }
+
+    // Task 45: Remove timer if manually served
+    if (gameState.currentCustomer.timer) {
+      gameState.currentCustomer.timer.destroy();
+      gameState.currentCustomer.timer = null;
+    }
+
+    // Tasks 46-47: Check for wave completion
+    if (gameState.customersServedCount >= gameState.totalCustomerCount) {
+      this.destroyWave();
+    }
+  }
+
+  // Task 40: Draw stars
+  drawStars() {
+    gameState.starGroup.clear(true);
+    
+    for (let i = 0; i < gameState.starRating; i++) {
+      const star = this.add.sprite(20 + i * 50, 20, 'Star-full').setScale(0.5);
+      gameState.starGroup.add(star);
+    }
+  }
+
+  // Tasks 41-44: Update stars based on rating
+  updateStars(fullnessValue, fullnessCapacity) {
+    // Task 41: Exactly full
+    if (fullnessValue === fullnessCapacity) {
+      gameState.currentCustomer.setTint(0x3ADB40);
+      gameState.sfx.servingCorrect.play();
+      gameState.score += 100;
+      gameState.scoreText.setText(gameState.score);
+      
+      if (gameState.starRating < 5) {
+        gameState.starRating++;
+      }
+      
+      if (gameState.starRating === 5) {
+        gameState.sfx.fiveStars.play();
+      }
+    }
+    // Task 42: Too hungry
+    else if (fullnessValue < fullnessCapacity) {
+      gameState.currentCustomer.setTint(0xDB533A);
+      gameState.sfx.servingIncorrect.play();
+      gameState.starRating -= 2;
+    }
+    // Task 43: Too full
+    else if (fullnessValue > fullnessCapacity) {
+      gameState.currentCustomer.setTint(0xDB9B3A);
+      gameState.sfx.servingEmpty.play();
+      gameState.starRating -= 1;
+    }
+
+    // Ensure rating stays valid
+    if (gameState.starRating < 0) gameState.starRating = 0;
+    if (gameState.starRating > 5) gameState.starRating = 5;
+
+    // Task 44: Redraw stars
+    this.drawStars();
+
+    // Task 48: Check for win/lose conditions
+    if (gameState.starRating === 0) {
+      this.scene.start('LoseScene', { score: gameState.score });
+    }
+    if (gameState.currentWaveCount >= gameState.totalWaveCount) {
+      this.scene.start('WinScene', { score: gameState.score });
+    }
+  }
+
+  // Task 15-17: Update customer count text
+  updateCustomerCountText() {
+    gameState.customersLeftCount = 
+      gameState.totalCustomerCount - gameState.customersServedCount;
+    gameState.customerCountText.setText(
+      `Customers left: ${gameState.customersLeftCount}`
+    );
+  }
+
+  // Task 47: Destroy wave and generate new one
+  destroyWave() {
+    gameState.sfx.nextWave.play();
+
+    // Tween all customers left one more time
+    for (let i = 0; i < gameState.customers.children.entries.length; i++) {
+      const customer = gameState.customers.children.entries[i];
+      this.tweens.add({
+        targets: customer,
+        x: customer.x - 300,
+        angle: 0,
+        duration: 750,
+        onComplete: () => {
+          // Tween off screen
+          this.tweens.add({
+            targets: customer,
+            x: -500,
+            duration: 1000,
+            onComplete: () => {
+              customer.destroy();
+            }
+          });
+        }
+      });
+    }
+
+    // Clear group and generate new wave
+    gameState.customers.clear(true);
+    gameState.currentWaveCount++;
+    gameState.gameSpeed *= 0.9; // Increase difficulty
+    gameState.readyForNextOrder = true;
+    
+    // Update wave text
+    gameState.waveCountText.setText(`${gameState.currentWaveCount}/${gameState.totalWaveCount}`);
+    gameState.waveCountText.setScale(0.3);
+    
+    setTimeout(() => {
+      gameState.waveCountText.setScale(0.25);
+      this.generateWave();
+    }, 2000);
+  }
+}
